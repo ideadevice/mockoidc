@@ -31,6 +31,10 @@ type MockUser struct {
 	Phone             string
 	Address           string
 	Groups            []string
+	CloudRoles        []string
+	Tenant            map[string]string
+	UserUuid          string
+	SubType           string
 }
 
 // DefaultUser returns a default MockUser that is set in
@@ -44,6 +48,12 @@ func DefaultUser() *MockUser {
 		Address:           "123 Main Street",
 		Groups:            []string{"engineering", "design"},
 		EmailVerified:     true,
+		CloudRoles:        []string{"b199ac60-ef4a-11ee-84e9-506b8dba89b0"},
+		UserUuid:          "e3911826-94aa-4c00-8d99-c2a2e84e94ca",
+		SubType:           "saml",
+		Tenant: map[string]string{
+			"uuid": "974f10fd-ac7a-498c-93a4-e2019a4f2e76",
+			"name": "xyzTenant"},
 	}
 }
 
@@ -75,12 +85,16 @@ func (u *MockUser) Userinfo(scope []string) ([]byte, error) {
 
 type mockClaims struct {
 	*IDTokenClaims
-	Email             string   `json:"email,omitempty"`
-	EmailVerified     bool     `json:"email_verified,omitempty"`
-	PreferredUsername string   `json:"preferred_username,omitempty"`
-	Phone             string   `json:"phone_number,omitempty"`
-	Address           string   `json:"address,omitempty"`
-	Groups            []string `json:"groups,omitempty"`
+	Email             string            `json:"email,omitempty"`
+	EmailVerified     bool              `json:"email_verified,omitempty"`
+	PreferredUsername string            `json:"preferred_username,omitempty"`
+	Phone             string            `json:"phone_number,omitempty"`
+	Address           string            `json:"address,omitempty"`
+	Groups            []string          `json:"groups,omitempty"`
+	CloudRoles        []string          `json:"cloud_roles,omitempty"`
+	Tenant            map[string]string `json:"tenant,omitempty"`
+	UserUuid          string            `json:"user_uuid,omitempty"`
+	SubType           string            `json:"sub_type,omitempty"`
 }
 
 func (u *MockUser) Claims(scope []string, claims *IDTokenClaims) (jwt.Claims, error) {
@@ -94,6 +108,10 @@ func (u *MockUser) Claims(scope []string, claims *IDTokenClaims) (jwt.Claims, er
 		Phone:             user.Phone,
 		Address:           user.Address,
 		Groups:            user.Groups,
+		CloudRoles:        user.CloudRoles,
+		Tenant:            user.Tenant,
+		UserUuid:          user.UserUuid,
+		SubType:           user.SubType,
 	}, nil
 }
 
@@ -101,6 +119,10 @@ func (u *MockUser) scopedClone(scopes []string) *MockUser {
 	clone := &MockUser{
 		Subject: u.Subject,
 	}
+	clone.CloudRoles = u.CloudRoles
+	clone.Tenant = u.Tenant
+	clone.UserUuid = u.UserUuid
+	clone.SubType = u.SubType
 	for _, scope := range scopes {
 		switch scope {
 		case "profile":
